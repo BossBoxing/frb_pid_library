@@ -5,13 +5,19 @@
  * This Library is licensed under the MIT License
  **********************************************************************************************/
 
+/***********************************
+ * PID Library - Version 1.0.0
+ * Edited by Friend Robot
+ * Credit : Brett Beauregard
+*/
+
 #if ARDUINO >= 100
   #include "Arduino.h"
 #else
   #include "WProgram.h"
 #endif
 
-#include <PID_v1.h>
+#include <FRB_PID.h>
 
 /*Constructor (...)*********************************************************
  *    The parameters specified here are those for for which we can't set up
@@ -25,8 +31,9 @@ PID::PID(double* Input, double* Output, double* Setpoint,
     mySetpoint = Setpoint;
     inAuto = false;
 
-    PID::SetOutputLimits(0, 255);				//default output limit corresponds to
-												//the arduino pwm limits
+    PID::SetOutputLimits(-100, 100);			// causes us have motor (-100, 100) .[min-max]	
+    //default output limit corresponds to
+	//the arduino pwm limits
 
     SampleTime = 100;							//default Controller Sample Time is 0.1 seconds
 
@@ -48,7 +55,6 @@ PID::PID(double* Input, double* Output, double* Setpoint,
 
 }
 
-
 /* Compute() **********************************************************************
  *     This, as they say, is where the magic happens.  this function should be called
  *   every time "void loop()" executes.  the function will decide for itself whether a new
@@ -57,12 +63,6 @@ PID::PID(double* Input, double* Output, double* Setpoint,
  **********************************************************************************/
 bool PID::Compute()
 {
-   if(!inAuto) return false;
-   unsigned long now = millis();
-   unsigned long timeChange = (now - lastTime);
-   if(timeChange>=SampleTime)
-   {
-      /*Compute all the working error variables*/
       double input = *myInput;
       double error = *mySetpoint - input;
       double dInput = (input - lastInput);
@@ -82,16 +82,13 @@ bool PID::Compute()
       /*Compute Rest of PID Output*/
       output += outputSum - kd * dInput;
 
-	    if(output > outMax) output = outMax;
+	   if(output > outMax) output = outMax;
       else if(output < outMin) output = outMin;
 	    *myOutput = output;
 
       /*Remember some variables for next time*/
       lastInput = input;
-      lastTime = now;
-	    return true;
-   }
-   else return false;
+	   return true;
 }
 
 /* SetTunings(...)*************************************************************
